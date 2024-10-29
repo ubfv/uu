@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة الأسئلة الثقافية</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            text-align: center;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: #FF7F50;
+            font-size: 2em;
+        }
+        .question {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .option {
+            display: block;
+            padding: 12px;
+            margin: 10px 0;
+            background-color: #00aaff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        .option:hover {
+            background-color: #0099e6;
+        }
+        .correct {
+            background-color: #4CAF50;
+        }
+        .incorrect {
+            background-color: #f44336;
+        }
+        .score {
+            font-size: 1.2em;
+            margin-top: 20px;
+            color: #FF7F50;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>لعبة الأسئلة الثقافية</h1>
+    <div id="quiz">
+        <p id="question" class="question"></p>
+        <button id="option1" class="option" onclick="checkAnswer(0)"></button>
+        <button id="option2" class="option" onclick="checkAnswer(1)"></button>
+        <button id="option3" class="option" onclick="checkAnswer(2)"></button>
+        <button id="option4" class="option" onclick="checkAnswer(3)"></button>
+    </div>
+    <div class="score">
+        <p>النقاط: <span id="score">0</span></p>
+    </div>
+</div>
+
+<script>
+    let score = 0;
+
+    // أسئلة عشوائية تعتمد على مجموعة واسعة من المواضيع
+    function generateRandomQuestion() {
+        const questionTypes = [
+            generateCapitalQuestion,
+            generateMathQuestion,
+            generatePlanetQuestion
+        ];
+        const randomType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+        return randomType();
+    }
+
+    function generateCapitalQuestion() {
+        const countries = [
+            { country: "مصر", capital: "القاهرة" },
+            { country: "فرنسا", capital: "باريس" },
+            { country: "اليابان", capital: "طوكيو" },
+            { country: "إسبانيا", capital: "مدريد" }
+        ];
+        const selected = countries[Math.floor(Math.random() * countries.length)];
+        const options = ["القاهرة", "باريس", "طوكيو", "مدريد"];
+        return {
+            question: `ما هي عاصمة ${selected.country}؟`,
+            options: shuffle([...options]),
+            correctAnswer: selected.capital
+        };
+    }
+
+    function generateMathQuestion() {
+        const num1 = Math.floor(Math.random() * 10) + 1;
+        const num2 = Math.floor(Math.random() * 10) + 1;
+        const correctAnswer = num1 + num2;
+        const options = [
+            correctAnswer,
+            correctAnswer + 1,
+            correctAnswer - 1,
+            correctAnswer + 2
+        ].map(String);  // تحويل إلى نص
+        return {
+            question: `ما هو ناتج ${num1} + ${num2}؟`,
+            options: shuffle([...options]),
+            correctAnswer: String(correctAnswer)
+        };
+    }
+
+    function generatePlanetQuestion() {
+        const planets = [
+            { name: "المشتري", size: "أكبر" },
+            { name: "الأرض", size: "ثالث" },
+            { name: "المريخ", size: "أصغر" }
+        ];
+        const selected = planets[Math.floor(Math.random() * planets.length)];
+        const options = ["المشتري", "الأرض", "المريخ", "عطارد"];
+        return {
+            question: `أي كوكب هو ${selected.size} كوكب في المجموعة الشمسية؟`,
+            options: shuffle([...options]),
+            correctAnswer: selected.name
+        };
+    }
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function loadQuestion() {
+        const generatedQuestion = generateRandomQuestion();
+        document.getElementById("question").innerText = generatedQuestion.question;
+        document.getElementById("option1").innerText = generatedQuestion.options[0];
+        document.getElementById("option2").innerText = generatedQuestion.options[1];
+        document.getElementById("option3").innerText = generatedQuestion.options[2];
+        document.getElementById("option4").innerText = generatedQuestion.options[3];
+        document.getElementById("option1").setAttribute("data-answer", generatedQuestion.options[0] === generatedQuestion.correctAnswer);
+        document.getElementById("option2").setAttribute("data-answer", generatedQuestion.options[1] === generatedQuestion.correctAnswer);
+        document.getElementById("option3").setAttribute("data-answer", generatedQuestion.options[2] === generatedQuestion.correctAnswer);
+        document.getElementById("option4").setAttribute("data-answer", generatedQuestion.options[3] === generatedQuestion.correctAnswer);
+    }
+
+    function checkAnswer(selectedOption) {
+        const isCorrect = document.getElementById("option" + (selectedOption + 1)).getAttribute("data-answer") === "true";
+        if (isCorrect) {
+            document.getElementById("option" + (selectedOption + 1)).classList.add("correct");
+            score++;
+        } else {
+            document.getElementById("option" + (selectedOption + 1)).classList.add("incorrect");
+        }
+        document.getElementById("score").innerText = score;
+        setTimeout(() => {
+            document.getElementById("option" + (selectedOption + 1)).classList.remove("correct", "incorrect");
+            loadQuestion();
+        }, 1000);
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
