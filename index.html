@@ -3,176 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة الأسئلة الثقافية</title>
+    <title>تحدي السرعة في الكتابة</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            text-align: center;
-            padding: 20px;
-            color: #333;
+            background-color: #f0f8ff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
+
         .container {
-            max-width: 600px;
-            margin: 0 auto;
+            text-align: center;
             background-color: #fff;
+            border-radius: 8px;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
+
         h1 {
-            color: #FF7F50;
-            font-size: 2em;
+            color: #4a90e2;
         }
-        .question {
-            font-size: 1.3em;
-            margin-bottom: 20px;
+
+        p {
+            font-size: 24px;
             color: #333;
         }
-        .option {
-            display: block;
-            padding: 12px;
+
+        input {
+            font-size: 20px;
+            padding: 10px;
+            width: 300px;
             margin: 10px 0;
-            background-color: #00aaff;
+            border: 2px solid #4a90e2;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #4a90e2;
             color: white;
             border: none;
-            border-radius: 8px;
+            padding: 10px 20px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s;
         }
-        .option:hover {
-            background-color: #0099e6;
+
+        button:hover {
+            background-color: #357ab8;
         }
-        .correct {
-            background-color: #4CAF50;
+
+        h2 {
+            color: #e94e77;
         }
-        .incorrect {
-            background-color: #f44336;
+
+        .level-selection {
+            margin: 20px 0;
         }
-        .score {
-            font-size: 1.2em;
-            margin-top: 20px;
-            color: #FF7F50;
+
+        .level-button {
+            background-color: #f39c12;
+            border: none;
+            padding: 10px 15px;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .level-button:hover {
+            background-color: #e67e22;
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>لعبة الأسئلة الثقافية</h1>
-    <div id="quiz">
-        <p id="question" class="question"></p>
-        <button id="option1" class="option" onclick="checkAnswer(0)"></button>
-        <button id="option2" class="option" onclick="checkAnswer(1)"></button>
-        <button id="option3" class="option" onclick="checkAnswer(2)"></button>
-        <button id="option4" class="option" onclick="checkAnswer(3)"></button>
-    </div>
-    <div class="score">
+    <div class="container">
+        <h1>تحدي السرعة في الكتابة</h1>
+        <div class="level-selection">
+            <button class="level-button" onclick="setDifficulty('easy')">سهل</button>
+            <button class="level-button" onclick="setDifficulty('medium')">متوسط</button>
+            <button class="level-button" onclick="setDifficulty('hard')">صعب</button>
+        </div>
+        <p id="wordDisplay"></p>
+        <input type="text" id="userInput" placeholder="اكتب هنا..." />
+        <button id="startButton">ابدأ</button>
+        <h2 id="resultMessage"></h2>
+        <p id="timer">الوقت: <span id="time">0</span> ثواني</p>
         <p>النقاط: <span id="score">0</span></p>
     </div>
-</div>
-
-<script>
-    let score = 0;
-
-    // أسئلة عشوائية تعتمد على مجموعة واسعة من المواضيع
-    function generateRandomQuestion() {
-        const questionTypes = [
-            generateCapitalQuestion,
-            generateMathQuestion,
-            generatePlanetQuestion
-        ];
-        const randomType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-        return randomType();
-    }
-
-    function generateCapitalQuestion() {
-        const countries = [
-            { country: "مصر", capital: "القاهرة" },
-            { country: "فرنسا", capital: "باريس" },
-            { country: "اليابان", capital: "طوكيو" },
-            { country: "إسبانيا", capital: "مدريد" }
-        ];
-        const selected = countries[Math.floor(Math.random() * countries.length)];
-        const options = ["القاهرة", "باريس", "طوكيو", "مدريد"];
-        return {
-            question: `ما هي عاصمة ${selected.country}؟`,
-            options: shuffle([...options]),
-            correctAnswer: selected.capital
+    <script>
+        const words = {
+            easy: ["كتاب", "قلم", "شجرة", "بيت", "كرة"],
+            medium: ["ممتعة", "برمجة", "تفاعل", "تجربة", "تحدي"],
+            hard: ["تحدي الكتابة", "سرعة الكتابة", "تجربة ممتعة", "ألعاب تفكير"],
         };
-    }
 
-    function generateMathQuestion() {
-        const num1 = Math.floor(Math.random() * 10) + 1;
-        const num2 = Math.floor(Math.random() * 10) + 1;
-        const correctAnswer = num1 + num2;
-        const options = [
-            correctAnswer,
-            correctAnswer + 1,
-            correctAnswer - 1,
-            correctAnswer + 2
-        ].map(String);  // تحويل إلى نص
-        return {
-            question: `ما هو ناتج ${num1} + ${num2}؟`,
-            options: shuffle([...options]),
-            correctAnswer: String(correctAnswer)
-        };
-    }
+        let currentWord;
+        let startTime;
+        let timer;
+        let timeElapsed = 0;
+        let score = 0;
+        let difficulty = 'easy';
 
-    function generatePlanetQuestion() {
-        const planets = [
-            { name: "المشتري", size: "أكبر" },
-            { name: "الأرض", size: "ثالث" },
-            { name: "المريخ", size: "أصغر" }
-        ];
-        const selected = planets[Math.floor(Math.random() * planets.length)];
-        const options = ["المشتري", "الأرض", "المريخ", "عطارد"];
-        return {
-            question: `أي كوكب هو ${selected.size} كوكب في المجموعة الشمسية؟`,
-            options: shuffle([...options]),
-            correctAnswer: selected.name
-        };
-    }
+        const wordDisplay = document.getElementById("wordDisplay");
+        const userInput = document.getElementById("userInput");
+        const startButton = document.getElementById("startButton");
+        const resultMessage = document.getElementById("resultMessage");
+        const timeDisplay = document.getElementById("time");
+        const scoreDisplay = document.getElementById("score");
 
-    function shuffle(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
+        startButton.addEventListener("click", startGame);
+
+        function setDifficulty(level) {
+            difficulty = level;
+            alert(`تم تعيين مستوى الصعوبة إلى ${level}`);
         }
-        return array;
-    }
 
-    function loadQuestion() {
-        const generatedQuestion = generateRandomQuestion();
-        document.getElementById("question").innerText = generatedQuestion.question;
-        document.getElementById("option1").innerText = generatedQuestion.options[0];
-        document.getElementById("option2").innerText = generatedQuestion.options[1];
-        document.getElementById("option3").innerText = generatedQuestion.options[2];
-        document.getElementById("option4").innerText = generatedQuestion.options[3];
-        document.getElementById("option1").setAttribute("data-answer", generatedQuestion.options[0] === generatedQuestion.correctAnswer);
-        document.getElementById("option2").setAttribute("data-answer", generatedQuestion.options[1] === generatedQuestion.correctAnswer);
-        document.getElementById("option3").setAttribute("data-answer", generatedQuestion.options[2] === generatedQuestion.correctAnswer);
-        document.getElementById("option4").setAttribute("data-answer", generatedQuestion.options[3] === generatedQuestion.correctAnswer);
-    }
+        function startGame() {
+            currentWord = words[difficulty][Math.floor(Math.random() * words[difficulty].length)];
+            wordDisplay.innerText = currentWord;
+            userInput.value = "";
+            resultMessage.innerText = "";
+            timeElapsed = 0;
+            scoreDisplay.innerText = score;
+            timeDisplay.innerText = timeElapsed;
+            startTime = Date.now();
+            userInput.focus();
 
-    function checkAnswer(selectedOption) {
-        const isCorrect = document.getElementById("option" + (selectedOption + 1)).getAttribute("data-answer") === "true";
-        if (isCorrect) {
-            document.getElementById("option" + (selectedOption + 1)).classList.add("correct");
-            score++;
-        } else {
-            document.getElementById("option" + (selectedOption + 1)).classList.add("incorrect");
+            timer = setInterval(() => {
+                timeElapsed = Math.floor((Date.now() - startTime) / 1000);
+                timeDisplay.innerText = timeElapsed;
+            }, 1000);
         }
-        document.getElementById("score").innerText = score;
-        setTimeout(() => {
-            document.getElementById("option" + (selectedOption + 1)).classList.remove("correct", "incorrect");
-            loadQuestion();
-        }, 1000);
-    }
 
-    loadQuestion();
-</script>
-
+        userInput.addEventListener("input", () => {
+            if (userInput.value === currentWord) {
+                clearInterval(timer);
+                score += Math.max(100 - timeElapsed * 10, 0); // نقاط تعتمد على الوقت
+                scoreDisplay.innerText = score;
+                resultMessage.innerText = `أحسنت! استغرقت ${timeElapsed} ثواني.`;
+                userInput.value = ""; // إعادة إدخال النص
+                startGame(); // البدء بكلمة جديدة
+            }
+        });
+    </script>
 </body>
 </html>
