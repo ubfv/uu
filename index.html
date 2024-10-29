@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحدي السرعة في الكتابة</title>
+    <title>تحدي سرعة الكتابة</title>
     <style>
         body {
-            background-color: #f0f8ff;
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -17,223 +17,104 @@
 
         .container {
             text-align: center;
-            background-color: #fff;
-            border-radius: 8px;
+            background: white;
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
-            color: #4a90e2;
-        }
-
-        p {
-            font-size: 24px;
             color: #333;
         }
 
-        input {
-            font-size: 20px;
-            padding: 10px;
-            width: 300px;
-            margin: 10px 0;
-            border: 2px solid #4a90e2;
-            border-radius: 4px;
-        }
-
-        button {
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #357ab8;
-        }
-
-        h2 {
-            color: #e94e77;
-        }
-
-        .level-selection {
-            margin: 20px 0;
-        }
-
-        .level-button {
-            background-color: #f39c12;
-            border: none;
-            padding: 10px 15px;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-
-        .level-button:hover {
-            background-color: #e67e22;
-        }
-
-        .stars {
-            font-size: 20px;
-            color: gold;
-        }
-
-        .user-info {
-            margin-top: 20px;
-            text-align: left;
-        }
-
-        /* نافذة دعوة الأصدقاء */
-        .invite-popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border: 2px solid #4a90e2;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-        }
-
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
+        textarea {
             width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
         }
 
-        .close-btn {
-            background-color: #e94e77;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
+        #timer {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        #shareLink {
+            margin-top: 20px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="overlay" id="overlay"></div>
     <div class="container">
-        <h1>تحدي السرعة في الكتابة</h1>
-        <div class="level-selection">
-            <button class="level-button" onclick="setDifficulty('easy')">سهل</button>
-            <button class="level-button" onclick="setDifficulty('medium')">متوسط</button>
-            <button class="level-button" onclick="setDifficulty('hard')">صعب</button>
+        <h1>تحدي سرعة الكتابة</h1>
+        <div id="game" style="display:none;">
+            <h2>اكتب الكلمات التالية:</h2>
+            <p id="words"></p>
+            <textarea id="input" placeholder="ابدأ الكتابة هنا..." rows="4"></textarea>
+            <div id="timer">الوقت: <span id="time">0</span> ثواني</div>
+            <button onclick="endGame()">إنهاء اللعبة</button>
         </div>
-        <p id="wordDisplay"></p>
-        <input type="text" id="userInput" placeholder="اكتب هنا..." />
-        <button id="startButton">ابدأ</button>
-        <h2 id="resultMessage"></h2>
-        <p id="timer">الوقت: <span id="time">0</span> ثواني</p>
-        <p>النقاط: <span id="score">0</span></p>
-        <p>النجوم: <span id="stars" class="stars">0</span></p>
-        <button id="dailyChallengeButton" style="display: none;">تحدي يومي</button>
-        <button id="challengeFriendsButton">تحدي الأصدقاء</button>
-        <button id="inviteButton">دعوة الأصدقاء</button>
-        <div class="user-info" id="userInfo" style="display: none;">
-            <h3>معلومات اللاعب:</h3>
-            <p>أفضل نتيجة: <span id="bestScore">0</span></p>
-            <p>النجوم: <span id="totalStars">0</span></p>
+        <div id="start">
+            <button onclick="startGame()">ابدأ اللعبة</button>
+            <button onclick="generateLink()">إنشاء رابط للمشاركة</button>
+            <p id="shareLink" style="display:none;"></p>
         </div>
     </div>
-
-    <!-- نافذة دعوة الأصدقاء -->
-    <div class="invite-popup" id="invitePopup">
-        <h3>دعوة أصدقائك للعب!</h3>
-        <p>يمكنك مشاركة هذا الرابط مع أصدقائك:</p>
-        <input type="text" value="http://yourgameurl.com" readonly />
-        <button class="close-btn" onclick="closeInvitePopup()">إغلاق</button>
-    </div>
-
     <script>
-        const words = {
-            easy: ["كتاب", "قلم", "شجرة", "بيت", "كرة"],
-            medium: ["ممتعة", "برمجة", "تفاعل", "تجربة", "تحدي"],
-            hard: ["تحدي الكتابة", "سرعة الكتابة", "تجربة ممتعة", "ألعاب تفكير"],
-        };
-
-        let currentWord;
         let startTime;
-        let timer;
-        let timeElapsed = 0;
-        let score = 0;
-        let stars = 0;
-        let bestScore = 0;
-        let totalStars = 0;
-        let difficulty = 'easy';
+        let timerInterval;
+        let wordsArray = [];
+        const wordCount = 5;
 
-        const wordDisplay = document.getElementById("wordDisplay");
-        const userInput = document.getElementById("userInput");
-        const startButton = document.getElementById("startButton");
-        const resultMessage = document.getElementById("resultMessage");
-        const timeDisplay = document.getElementById("time");
-        const scoreDisplay = document.getElementById("score");
-        const starsDisplay = document.getElementById("stars");
-        const dailyChallengeButton = document.getElementById("dailyChallengeButton");
-        const challengeFriendsButton = document.getElementById("challengeFriendsButton");
-        const inviteButton = document.getElementById("inviteButton");
-        const invitePopup = document.getElementById("invitePopup");
-        const overlay = document.getElementById("overlay");
-        const userInfo = document.getElementById("userInfo");
-        const bestScoreDisplay = document.getElementById("bestScore");
-        const totalStarsDisplay = document.getElementById("totalStars");
-
-        startButton.addEventListener("click", startGame);
-        dailyChallengeButton.addEventListener("click", dailyChallenge);
-        challengeFriendsButton.addEventListener("click", challengeFriends);
-        inviteButton.addEventListener("click", openInvitePopup);
-
-        function setDifficulty(level) {
-            difficulty = level;
-            alert(`تم تعيين مستوى الصعوبة إلى ${level}`);
+        function generateRandomWords(numWords) {
+            const words = ["برمجة", "تحدي", "كتابة", "سرعة", "موقع", "لعبة", "كلمات", "عشوائية"];
+            let randomWords = [];
+            for (let i = 0; i < numWords; i++) {
+                const randomIndex = Math.floor(Math.random() * words.length);
+                randomWords.push(words[randomIndex]);
+            }
+            return randomWords.join(" ");
         }
 
         function startGame() {
-            currentWord = words[difficulty][Math.floor(Math.random() * words[difficulty].length)];
-            wordDisplay.innerText = currentWord;
-            userInput.value = "";
-            resultMessage.innerText = "";
-            timeElapsed = 0;
-            scoreDisplay.innerText = score;
-            starsDisplay.innerText = stars;
-            userInfo.style.display = "none";
-            startTime = Date.now();
-            userInput.focus();
+            document.getElementById("start").style.display = "none";
+            document.getElementById("game").style.display = "block";
 
-            timer = setInterval(() => {
-                timeElapsed = Math.floor((Date.now() - startTime) / 1000);
-                timeDisplay.innerText = timeElapsed;
+            // توليد كلمات عشوائية
+            wordsArray = generateRandomWords(wordCount).split(" ");
+            document.getElementById("words").textContent = wordsArray.join(" ");
+
+            // إعادة تعيين الوقت
+            document.getElementById("time").textContent = "0";
+            startTime = Date.now();
+            
+            // بدء العداد
+            timerInterval = setInterval(() => {
+                const timePassed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById("time").textContent = timePassed;
             }, 1000);
         }
 
-        userInput.addEventListener("input", () => {
-            if (userInput.value === currentWord) {
-                clearInterval(timer);
-                score += Math.max(100 - timeElapsed * 10, 0); // نقاط تعتمد على الوقت
-                stars += score >= 500 ? 1 : 0; // إضافة نجمة عند تخطي 500 نقطة
+        function endGame() {
+            clearInterval(timerInterval);
+            const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+            const userInput = document.getElementById("input").value.trim();
+            const isSuccess = userInput.split(" ").join("") === wordsArray.join("");
+            const resultMessage = isSuccess ? `مبروك! انتهيت في ${timeTaken} ثواني.` : `للأسف! لم تكن جميع الكلمات صحيحة.`;
 
-                if (score > bestScore) {
-                    bestScore = score; // تحديث أفضل نتيجة
-                }
+            alert(resultMessage);
+            document.getElementById("game").style.display = "none";
+            document.getElementById("start").style.display = "block";
+            document.getElementById("input").value = ""; // إعادة تعيين حقل الإدخال
+        }
 
-                totalStars += stars; // تحديث إجمالي النجوم
-                scoreDisplay.innerText = score;
-                starsDisplay.innerText = stars;
-                bestScoreDisplay.innerText = bestScore;
-                totalStarsDisplay.innerText = totalStars;
-                userInfo.style.display = "block"; // عرض معلومات اللاعب
-                resultMessage.innerText = `أحسنت! استغرقت ${timeElapsed} ثواني.`;
-                userInput.value = ""; // إعادة إدخال النص
-                startGame(); // البدء بكلمة جديدة
-            }
+        function generateLink() {
+            const link = window.location.href; // رابط الصفحة الحالية
+            const shareLink = `رابط التحدي: ${link}`;
+            document.getElementById("shareLink").textContent = shareLink;
+            document.getElementById("shareLink").style.display = "block";
+        }
+    </script>
+</body>
+</html>
