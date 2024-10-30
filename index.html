@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحدي سرعة الكتابة</title>
+    <title>تحدي السرعة في الكتابة</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #2a3d66; /* لون يعكس طابع التركيز والتحدي */
+            font-family: 'Arial', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -17,104 +17,204 @@
 
         .container {
             text-align: center;
-            background: white;
+            background-color: #f7f7f7; /* لون هادئ يتناسب مع التحدي */
+            border-radius: 8px;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            border: 3px solid #4a90e2;
         }
 
         h1 {
+            color: #4a90e2;
+        }
+
+        p {
+            font-size: 24px;
             color: #333;
         }
 
-        textarea {
-            width: 100%;
-            margin-top: 10px;
+        input {
+            font-size: 20px;
             padding: 10px;
-            font-size: 16px;
+            width: 300px;
+            margin: 10px 0;
+            border: 2px solid #4a90e2;
+            border-radius: 4px;
         }
 
-        #timer {
-            margin-top: 20px;
-            font-weight: bold;
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
-        #shareLink {
+        button:hover {
+            background-color: #357ab8;
+        }
+
+        h2 {
+            color: #e94e77;
+        }
+
+        .level-selection {
+            margin: 20px 0;
+        }
+
+        .level-button {
+            background-color: #f39c12;
+            border: none;
+            padding: 10px 15px;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .level-button:hover {
+            background-color: #e67e22;
+        }
+
+        .stars {
+            font-size: 20px;
+            color: gold;
+        }
+
+        .user-info {
             margin-top: 20px;
-            font-weight: bold;
+            text-align: left;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>تحدي سرعة الكتابة</h1>
-        <div id="game" style="display:none;">
-            <h2>اكتب الكلمات التالية:</h2>
-            <p id="words"></p>
-            <textarea id="input" placeholder="ابدأ الكتابة هنا..." rows="4"></textarea>
-            <div id="timer">الوقت: <span id="time">0</span> ثواني</div>
-            <button onclick="endGame()">إنهاء اللعبة</button>
+        <h1>تحدي السرعة في الكتابة</h1>
+        <div class="level-selection">
+            <button class="level-button" onclick="setDifficulty('easy')">سهل</button>
+            <button class="level-button" onclick="setDifficulty('medium')">متوسط</button>
+            <button class="level-button" onclick="setDifficulty('hard')">صعب</button>
         </div>
-        <div id="start">
-            <button onclick="startGame()">ابدأ اللعبة</button>
-            <button onclick="generateLink()">إنشاء رابط للمشاركة</button>
-            <p id="shareLink" style="display:none;"></p>
+        <p id="wordDisplay"></p>
+        <input type="text" id="userInput" placeholder="اكتب هنا..." />
+        <button id="startButton">ابدأ</button>
+        <h2 id="resultMessage"></h2>
+        <p id="timer">الوقت: <span id="time">0</span> ثواني</p>
+        <p>النقاط: <span id="score">0</span></p>
+        <p>النجوم: <span id="stars" class="stars">0</span></p>
+        <button id="dailyChallengeButton" style="display: none;">تحدي يومي</button>
+        <button id="challengeFriendsButton">تحدي الأصدقاء</button>
+        <div class="user-info" id="userInfo" style="display: none;">
+            <h3>معلومات اللاعب:</h3>
+            <p>أفضل نتيجة: <span id="bestScore">0</span></p>
+            <p>النجوم: <span id="totalStars">0</span></p>
+        </div>
+        <div id="friendChallenge" style="display: none;">
+            <h2>تحدي الأصدقاء</h2>
+            <p>شارك الرابط مع أصدقائك:</p>
+            <input type="text" id="challengeLink" readonly />
+            <button id="startFriendChallengeButton">بدء التحدي</button>
         </div>
     </div>
     <script>
+        let currentWord;
         let startTime;
-        let timerInterval;
-        let wordsArray = [];
-        const wordCount = 5;
+        let timer;
+        let timeElapsed = 0;
+        let score = 0;
+        let stars = 0;
+        let bestScore = 0;
+        let totalStars = 0;
+        let difficulty = 'easy';
+        let isFriendChallenge = false;
 
-        function generateRandomWords(numWords) {
-            const words = ["برمجة", "تحدي", "كتابة", "سرعة", "موقع", "لعبة", "كلمات", "عشوائية"];
-            let randomWords = [];
-            for (let i = 0; i < numWords; i++) {
-                const randomIndex = Math.floor(Math.random() * words.length);
-                randomWords.push(words[randomIndex]);
-            }
-            return randomWords.join(" ");
+        const wordDisplay = document.getElementById("wordDisplay");
+        const userInput = document.getElementById("userInput");
+        const startButton = document.getElementById("startButton");
+        const resultMessage = document.getElementById("resultMessage");
+        const timeDisplay = document.getElementById("time");
+        const scoreDisplay = document.getElementById("score");
+        const starsDisplay = document.getElementById("stars");
+        const dailyChallengeButton = document.getElementById("dailyChallengeButton");
+        const challengeFriendsButton = document.getElementById("challengeFriendsButton");
+        const userInfo = document.getElementById("userInfo");
+        const bestScoreDisplay = document.getElementById("bestScore");
+        const totalStarsDisplay = document.getElementById("totalStars");
+        const challengeLinkInput = document.getElementById("challengeLink");
+        const friendChallengeDiv = document.getElementById("friendChallenge");
+        const startFriendChallengeButton = document.getElementById("startFriendChallengeButton");
+
+        function setDifficulty(level) {
+            difficulty = level;
+            alert(`تم تعيين مستوى الصعوبة إلى ${level}`);
         }
 
-        function startGame() {
-            document.getElementById("start").style.display = "none";
-            document.getElementById("game").style.display = "block";
+        async function fetchRandomWord() {
+            const response = await fetch('https://random-word-api.herokuapp.com/word?number=1');
+            const data = await response.json();
+            return data[0]; // إرجاع الكلمة الأولى
+        }
 
-            // توليد كلمات عشوائية
-            wordsArray = generateRandomWords(wordCount).split(" ");
-            document.getElementById("words").textContent = wordsArray.join(" ");
-
-            // إعادة تعيين الوقت
-            document.getElementById("time").textContent = "0";
+        async function startGame() {
+            currentWord = await fetchRandomWord();
+            wordDisplay.innerText = currentWord;
+            userInput.value = "";
+            resultMessage.innerText = "";
+            timeElapsed = 0;
+            scoreDisplay.innerText = score;
+            starsDisplay.innerText = stars;
+            userInfo.style.display = "none";
             startTime = Date.now();
-            
-            // بدء العداد
-            timerInterval = setInterval(() => {
-                const timePassed = Math.floor((Date.now() - startTime) / 1000);
-                document.getElementById("time").textContent = timePassed;
+            userInput.focus();
+
+            timer = setInterval(() => {
+                timeElapsed = Math.floor((Date.now() - startTime) / 1000);
+                timeDisplay.innerText = timeElapsed;
             }, 1000);
         }
 
-        function endGame() {
-            clearInterval(timerInterval);
-            const timeTaken = Math.floor((Date.now() - startTime) / 1000);
-            const userInput = document.getElementById("input").value.trim();
-            const isSuccess = userInput.split(" ").join("") === wordsArray.join("");
-            const resultMessage = isSuccess ? `مبروك! انتهيت في ${timeTaken} ثواني.` : `للأسف! لم تكن جميع الكلمات صحيحة.`;
+        startButton.addEventListener("click", startGame);
 
-            alert(resultMessage);
-            document.getElementById("game").style.display = "none";
-            document.getElementById("start").style.display = "block";
-            document.getElementById("input").value = ""; // إعادة تعيين حقل الإدخال
+        userInput.addEventListener("input", () => {
+            if (userInput.value === currentWord) {
+                clearInterval(timer);
+                score += Math.max(100 - timeElapsed * 10, 0);
+                stars += score >= 500 ? 1 : 0;
+
+                if (score > bestScore) {
+                    bestScore = score;
+                }
+
+                totalStars += stars;
+                scoreDisplay.innerText = score;
+                starsDisplay.innerText = stars;
+                bestScoreDisplay.innerText = bestScore;
+                totalStarsDisplay.innerText = totalStars;
+                userInfo.style.display = "block";
+                resultMessage.innerText = `أحسنت! استغرقت ${timeElapsed} ثواني.`;
+                userInput.value = "";
+                startGame();
+            }
+        });
+
+        function createChallengeLink() {
+            const uniqueCode = Math.random().toString(36).substr(2, 5); // إنشاء رمز فريد
+            const link = `${window.location.href}?challenge=${uniqueCode}`;
+            challengeLinkInput.value = link;
+            friendChallengeDiv.style.display = "block";
         }
 
-        function generateLink() {
-            const link = window.location.href; // رابط الصفحة الحالية
-            const shareLink = `رابط التحدي: ${link}`;
-            document.getElementById("shareLink").textContent = shareLink;
-            document.getElementById("shareLink").style.display = "block";
-        }
+        challengeFriendsButton.addEventListener("click", createChallengeLink);
+
+        startFriendChallengeButton.addEventListener("click", () => {
+            // بدء تحدي الأصدقاء مع وقت 1 دقيقة
+            alert("تم بدء تحدي الأصدقاء! لديك 1 دقيقة.");
+            setTimeout(() => {
+                alert("انتهى الوقت! تم احتساب نقاطك.");
+                // هنا يمكنك إضافة كود لتحديد الفائز بناءً على النقاط
+            }, 60000); // 1 دقيقة
+        });
     </script>
 </body>
 </html>
