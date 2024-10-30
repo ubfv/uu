@@ -1,213 +1,155 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحدي السرعة في الكتابة</title>
-    <style>
-        body {
-            background-color: #2a3d66;
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+// استيراد المكتبات اللازمة
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-        .container {
-            text-align: center;
-            background-color: #f7f7f7;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-            border: 3px solid #4a90e2;
-            width: 80%;
-            max-width: 500px;
-        }
-
-        h1 {
-            color: #4a90e2;
-        }
-
-        p {
-            font-size: 24px;
-            color: #333;
-        }
-
-        input {
-            font-size: 20px;
-            padding: 10px;
-            width: 100%;
-            margin: 10px 0;
-            border: 2px solid #4a90e2;
-            border-radius: 4px;
-        }
-
-        button {
-            background-color: #4a90e2;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #357ab8;
-        }
-
-        h2 {
-            color: #e94e77;
-        }
-
-        .level-selection {
-            margin: 20px 0;
-        }
-
-        .level-button {
-            background-color: #f39c12;
-            border: none;
-            padding: 10px 15px;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 5px;
-        }
-
-        .level-button:hover {
-            background-color: #e67e22;
-        }
-
-        .leaderboard {
-            margin-top: 20px;
-            text-align: left;
-            max-width: 500px;
-        }
-
-        .leaderboard h3 {
-            color: #4a90e2;
-        }
-
-        .leaderboard-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .leaderboard-item:nth-child(odd) {
-            background-color: #f2f2f2;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>تحدي السرعة في الكتابة</h1>
-        <div class="level-selection">
-            <button class="level-button" onclick="setDifficulty('easy')">سهل</button>
-            <button class="level-button" onclick="setDifficulty('medium')">متوسط</button>
-            <button class="level-button" onclick="setDifficulty('hard')">صعب</button>
-        </div>
-        <p id="wordDisplay"></p>
-        <input type="text" id="userInput" placeholder="اكتب هنا..." />
-        <button id="startButton">ابدأ</button>
-        <h2 id="resultMessage"></h2>
-        <p>الوقت: <span id="time">0</span> ثواني</p>
-        <p>النقاط: <span id="score">0</span></p>
-        <div class="leaderboard">
-            <h3>لوحة المتصدرين</h3>
-            <div id="leaderboardList"></div>
-        </div>
-    </div>
-
-    <script>
-        const wordLists = {
-            easy: ["سلام", "بيت", "نور", "قلم", "باب"],
-            medium: ["سيارة", "مدرسة", "هاتف", "كمبيوتر", "حديقة"],
-            hard: ["استراتيجية", "مستشفى", "منافسة", "مشاهدة", "تحدي"]
-        };
-
-        let currentWord;
-        let startTime;
-        let timer;
-        let timeElapsed = 0;
-        let score = 0;
-        let difficulty = 'easy';
-        let leaderboard = [];
-
-        const wordDisplay = document.getElementById("wordDisplay");
-        const userInput = document.getElementById("userInput");
-        const startButton = document.getElementById("startButton");
-        const resultMessage = document.getElementById("resultMessage");
-        const timeDisplay = document.getElementById("time");
-        const scoreDisplay = document.getElementById("score");
-        const leaderboardList = document.getElementById("leaderboardList");
-
-        function setDifficulty(level) {
-            difficulty = level;
-            alert(`تم تعيين مستوى الصعوبة إلى ${level}`);
-        }
-
-        function getRandomWord() {
-            const words = wordLists[difficulty];
-            return words[Math.floor(Math.random() * words.length)];
-        }
-
-        function startGame() {
-            currentWord = getRandomWord();
-            wordDisplay.innerText = currentWord;
-            userInput.value = "";
-            resultMessage.innerText = "";
-            timeElapsed = 0;
-            score = 0;
-            scoreDisplay.innerText = score;
-            startTime = Date.now();
-            userInput.focus();
-
-            clearInterval(timer);
-            timer = setInterval(() => {
-                timeElapsed = Math.floor((Date.now() - startTime) / 1000);
-                timeDisplay.innerText = timeElapsed;
-            }, 1000);
-        }
-
-        function updateLeaderboard() {
-            leaderboardList.innerHTML = "";
-            leaderboard.sort((a, b) => b.score - a.score);
-            leaderboard.slice(0, 5).forEach((entry, index) => {
-                const item = document.createElement("div");
-                item.className = "leaderboard-item";
-                item.innerHTML = `<span>${index + 1}. ${entry.name}</span><span>${entry.score} نقاط</span>`;
-                leaderboardList.appendChild(item);
-            });
-        }
-
-        function addScoreToLeaderboard(name, score) {
-            leaderboard.push({ name, score });
-            updateLeaderboard();
-        }
-
-        startButton.addEventListener("click", startGame);
-
-        userInput.addEventListener("input", () => {
-            if (userInput.value === currentWord) {
-                clearInterval(timer);
-                score += Math.max(100 - timeElapsed * 10, 0);
-                scoreDisplay.innerText = score;
-                resultMessage.innerText = `أحسنت! استغرقت ${timeElapsed} ثواني.`;
-                
-                let playerName = prompt("أدخل اسمك لتسجيل النقاط:", "لاعب");
-                if (playerName) {
-                    addScoreToLeaderboard(playerName, score);
-                }
-                
-                userInput.value = "";
-                startGame();
+// خدمة الواجهة الأمامية HTML/CSS/JavaScript
+app.get('/', (req, res) => {
+    res.send(`
+    <!DOCTYPE html>
+    <html lang="ar">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>لعبة اختبار الذاكرة الجماعي</title>
+        <style>
+            /* تنسيقات الصفحة الخارجية */
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f0f0f0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
             }
-        });
+            h1 {
+                color: #333;
+                text-align: center;
+            }
+            #game {
+                display: grid;
+                grid-template-columns: repeat(4, 100px);
+                grid-gap: 10px;
+                margin-top: 20px;
+            }
+            .tile {
+                width: 100px;
+                height: 100px;
+                background-color: #8c8c8c;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                color: #fff;
+                cursor: pointer;
+                border-radius: 10px;
+                transition: background-color 0.3s;
+            }
+            .tile.revealed {
+                background-color: #4caf50;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container">
+            <h1>لعبة اختبار الذاكرة الجماعي</h1>
+            <div id="game"></div>
+            <p id="status">انتظر اللاعبين الآخرين...</p>
+        </div>
 
-        updateLeaderboard(); // عرض لوحة المتصدرين عند تحميل الصفحة
-    </script>
-</body>
-</html>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            // الاتصال بالخادم
+            const socket = io();
+
+            // تهيئة اللعبة
+            const gameContainer = document.getElementById('game');
+            const statusText = document.getElementById('status');
+            let gridSize = 16;  // عدد الخانات
+            let revealedTiles = [];
+
+            // إنشاء شبكة اللعبة
+            function initializeGame() {
+                gameContainer.innerHTML = '';
+                for (let i = 0; i < gridSize; i++) {
+                    const tile = document.createElement('div');
+                    tile.classList.add('tile');
+                    tile.dataset.index = i;
+                    tile.addEventListener('click', () => handleTileClick(i));
+                    gameContainer.appendChild(tile);
+                }
+            }
+
+            // حدث عند النقر على الخانات
+            function handleTileClick(index) {
+                if (revealedTiles.length < 2) {
+                    revealedTiles.push(index);
+                    updateTileDisplay();
+                    socket.emit('tileReveal', index);
+                }
+            }
+
+            // تحديث عرض الخانات
+            function updateTileDisplay() {
+                const tiles = document.querySelectorAll('.tile');
+                tiles.forEach(tile => tile.classList.remove('revealed'));
+                revealedTiles.forEach(index => tiles[index].classList.add('revealed'));
+
+                if (revealedTiles.length === 2) {
+                    setTimeout(checkMatch, 1000);
+                }
+            }
+
+            // التحقق من تطابق الخانات
+            function checkMatch() {
+                const [index1, index2] = revealedTiles;
+                if (index1 !== index2 && index1 % 8 === index2 % 8) {
+                    statusText.textContent = 'تطابق!';
+                } else {
+                    statusText.textContent = 'لا يوجد تطابق!';
+                    revealedTiles = [];
+                }
+                updateTileDisplay();
+            }
+
+            // استقبال كشف الخانات من اللاعبين الآخرين
+            socket.on('tileReveal', index => {
+                if (!revealedTiles.includes(index)) {
+                    revealedTiles.push(index);
+                    updateTileDisplay();
+                }
+            });
+
+            // بدء اللعبة عند الاتصال بالخادم
+            socket.on('startGame', () => {
+                statusText.textContent = 'ابدأ اللعب!';
+                initializeGame();
+            });
+        </script>
+    </body>
+    </html>
+    `);
+});
+
+// إعداد Socket.IO لأحداث اللعبة
+io.on('connection', (socket) => {
+    console.log('A player connected:', socket.id);
+    socket.emit('startGame');  // بدء اللعبة عند الاتصال
+
+    socket.on('tileReveal', (index) => {
+        socket.broadcast.emit('tileReveal', index);  // إرسال حركة اللاعب لبقية اللاعبين
+    });
+
+    socket.on('disconnect', () => {
+        console.log('A player disconnected:', socket.id);
+    });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
