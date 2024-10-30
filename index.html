@@ -6,7 +6,7 @@
     <title>تحدي السرعة في الكتابة</title>
     <style>
         body {
-            background-color: #2a3d66; /* لون يعكس طابع التركيز والتحدي */
+            background-color: #2a3d66;
             font-family: 'Arial', sans-serif;
             display: flex;
             justify-content: center;
@@ -17,11 +17,13 @@
 
         .container {
             text-align: center;
-            background-color: #f7f7f7; /* لون هادئ يتناسب مع التحدي */
+            background-color: #f7f7f7;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
             border: 3px solid #4a90e2;
+            width: 80%;
+            max-width: 500px;
         }
 
         h1 {
@@ -36,7 +38,7 @@
         input {
             font-size: 20px;
             padding: 10px;
-            width: 300px;
+            width: 100%;
             margin: 10px 0;
             border: 2px solid #4a90e2;
             border-radius: 4px;
@@ -77,14 +79,25 @@
             background-color: #e67e22;
         }
 
-        .stars {
-            font-size: 20px;
-            color: gold;
-        }
-
-        .user-info {
+        .leaderboard {
             margin-top: 20px;
             text-align: left;
+            max-width: 500px;
+        }
+
+        .leaderboard h3 {
+            color: #4a90e2;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .leaderboard-item:nth-child(odd) {
+            background-color: #f2f2f2;
         }
     </style>
 </head>
@@ -100,34 +113,28 @@
         <input type="text" id="userInput" placeholder="اكتب هنا..." />
         <button id="startButton">ابدأ</button>
         <h2 id="resultMessage"></h2>
-        <p id="timer">الوقت: <span id="time">0</span> ثواني</p>
+        <p>الوقت: <span id="time">0</span> ثواني</p>
         <p>النقاط: <span id="score">0</span></p>
-        <p>النجوم: <span id="stars" class="stars">0</span></p>
-        <button id="dailyChallengeButton" style="display: none;">تحدي يومي</button>
-        <button id="challengeFriendsButton">تحدي الأصدقاء</button>
-        <div class="user-info" id="userInfo" style="display: none;">
-            <h3>معلومات اللاعب:</h3>
-            <p>أفضل نتيجة: <span id="bestScore">0</span></p>
-            <p>النجوم: <span id="totalStars">0</span></p>
-        </div>
-        <div id="friendChallenge" style="display: none;">
-            <h2>تحدي الأصدقاء</h2>
-            <p>شارك الرابط مع أصدقائك:</p>
-            <input type="text" id="challengeLink" readonly />
-            <button id="startFriendChallengeButton">بدء التحدي</button>
+        <div class="leaderboard">
+            <h3>لوحة المتصدرين</h3>
+            <div id="leaderboardList"></div>
         </div>
     </div>
+
     <script>
+        const wordLists = {
+            easy: ["سلام", "بيت", "نور", "قلم", "باب"],
+            medium: ["سيارة", "مدرسة", "هاتف", "كمبيوتر", "حديقة"],
+            hard: ["استراتيجية", "مستشفى", "منافسة", "مشاهدة", "تحدي"]
+        };
+
         let currentWord;
         let startTime;
         let timer;
         let timeElapsed = 0;
         let score = 0;
-        let stars = 0;
-        let bestScore = 0;
-        let totalStars = 0;
         let difficulty = 'easy';
-        let isFriendChallenge = false;
+        let leaderboard = [];
 
         const wordDisplay = document.getElementById("wordDisplay");
         const userInput = document.getElementById("userInput");
@@ -135,43 +142,50 @@
         const resultMessage = document.getElementById("resultMessage");
         const timeDisplay = document.getElementById("time");
         const scoreDisplay = document.getElementById("score");
-        const starsDisplay = document.getElementById("stars");
-        const dailyChallengeButton = document.getElementById("dailyChallengeButton");
-        const challengeFriendsButton = document.getElementById("challengeFriendsButton");
-        const userInfo = document.getElementById("userInfo");
-        const bestScoreDisplay = document.getElementById("bestScore");
-        const totalStarsDisplay = document.getElementById("totalStars");
-        const challengeLinkInput = document.getElementById("challengeLink");
-        const friendChallengeDiv = document.getElementById("friendChallenge");
-        const startFriendChallengeButton = document.getElementById("startFriendChallengeButton");
+        const leaderboardList = document.getElementById("leaderboardList");
 
         function setDifficulty(level) {
             difficulty = level;
             alert(`تم تعيين مستوى الصعوبة إلى ${level}`);
         }
 
-        async function fetchRandomWord() {
-            const response = await fetch('https://random-word-api.herokuapp.com/word?number=1');
-            const data = await response.json();
-            return data[0]; // إرجاع الكلمة الأولى
+        function getRandomWord() {
+            const words = wordLists[difficulty];
+            return words[Math.floor(Math.random() * words.length)];
         }
 
-        async function startGame() {
-            currentWord = await fetchRandomWord();
+        function startGame() {
+            currentWord = getRandomWord();
             wordDisplay.innerText = currentWord;
             userInput.value = "";
             resultMessage.innerText = "";
             timeElapsed = 0;
+            score = 0;
             scoreDisplay.innerText = score;
-            starsDisplay.innerText = stars;
-            userInfo.style.display = "none";
             startTime = Date.now();
             userInput.focus();
 
+            clearInterval(timer);
             timer = setInterval(() => {
                 timeElapsed = Math.floor((Date.now() - startTime) / 1000);
                 timeDisplay.innerText = timeElapsed;
             }, 1000);
+        }
+
+        function updateLeaderboard() {
+            leaderboardList.innerHTML = "";
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard.slice(0, 5).forEach((entry, index) => {
+                const item = document.createElement("div");
+                item.className = "leaderboard-item";
+                item.innerHTML = `<span>${index + 1}. ${entry.name}</span><span>${entry.score} نقاط</span>`;
+                leaderboardList.appendChild(item);
+            });
+        }
+
+        function addScoreToLeaderboard(name, score) {
+            leaderboard.push({ name, score });
+            updateLeaderboard();
         }
 
         startButton.addEventListener("click", startGame);
@@ -180,41 +194,20 @@
             if (userInput.value === currentWord) {
                 clearInterval(timer);
                 score += Math.max(100 - timeElapsed * 10, 0);
-                stars += score >= 500 ? 1 : 0;
-
-                if (score > bestScore) {
-                    bestScore = score;
-                }
-
-                totalStars += stars;
                 scoreDisplay.innerText = score;
-                starsDisplay.innerText = stars;
-                bestScoreDisplay.innerText = bestScore;
-                totalStarsDisplay.innerText = totalStars;
-                userInfo.style.display = "block";
                 resultMessage.innerText = `أحسنت! استغرقت ${timeElapsed} ثواني.`;
+                
+                let playerName = prompt("أدخل اسمك لتسجيل النقاط:", "لاعب");
+                if (playerName) {
+                    addScoreToLeaderboard(playerName, score);
+                }
+                
                 userInput.value = "";
                 startGame();
             }
         });
 
-        function createChallengeLink() {
-            const uniqueCode = Math.random().toString(36).substr(2, 5); // إنشاء رمز فريد
-            const link = `${window.location.href}?challenge=${uniqueCode}`;
-            challengeLinkInput.value = link;
-            friendChallengeDiv.style.display = "block";
-        }
-
-        challengeFriendsButton.addEventListener("click", createChallengeLink);
-
-        startFriendChallengeButton.addEventListener("click", () => {
-            // بدء تحدي الأصدقاء مع وقت 1 دقيقة
-            alert("تم بدء تحدي الأصدقاء! لديك 1 دقيقة.");
-            setTimeout(() => {
-                alert("انتهى الوقت! تم احتساب نقاطك.");
-                // هنا يمكنك إضافة كود لتحديد الفائز بناءً على النقاط
-            }, 60000); // 1 دقيقة
-        });
+        updateLeaderboard(); // عرض لوحة المتصدرين عند تحميل الصفحة
     </script>
 </body>
 </html>
